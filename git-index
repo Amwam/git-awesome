@@ -1,0 +1,66 @@
+#!/usr/bin/env sh
+
+usage() {
+    echo "usage: git index <subcommand>"
+    echo
+    echo "Available subcommands are:"
+    echo "[add|reset|diff]"
+}
+
+version() {
+    echo "git-extensions git plugin v0.0.1"
+    echo
+}
+
+cmd_add() {
+    git add $@
+}
+
+cmd_reset() {
+    git reset HEAD $@
+}
+
+cmd_diff() {
+    git diff --staged 
+}
+
+function_exists() {
+    declare -f -F $1 > /dev/null
+    return $?
+}
+
+main() {
+    if [ "$#" -lt 1 ]; then
+        usage; exit 1
+    fi
+
+    local subcommand="$1"; shift
+
+    case $subcommand in
+        "-h"|"--help")
+            usage; exit 0
+            ;;
+        "-v"|"--version")
+            version; exit 0
+            ;;
+    esac
+
+    if function_exists "cmd_$subcommand" ; then
+        cmd_$subcommand "$@"; exit 0
+    fi
+
+    local workingdir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+    if [ ! -e "$workingdir/git-index-$subcommand" ]; then
+        usage; exit 1
+    fi
+
+    source "$workingdir/git-index-$subcommand"
+
+    if ! function_exists "cmd_$subcommand"  ; then
+        usage; exit 1
+    fi
+
+    cmd_$subcommand "$@"
+}
+
+main "$@"
