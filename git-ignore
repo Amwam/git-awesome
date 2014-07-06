@@ -1,0 +1,47 @@
+
+#!/usr/bin/env sh
+usage() {
+    echo "usage: git ignore <filepattern>"
+    echo
+}
+
+version() {
+    echo "git-extensions git plugin v0.0.1"
+    echo
+}
+
+function_exists() {
+    declare -f -F $1 > /dev/null
+    return $?
+}
+
+main() {
+    if [ "$#" -lt 1 ]; then
+        usage; exit 1
+    fi
+    
+    if [ $# = 0 ]
+	then
+	  echo "Please supply at least one file pattern"
+	  exit 1
+	fi
+
+    local subcommand="$1";
+
+    case $subcommand in
+        "-h"|"--help")
+            usage; exit 0
+            ;;
+        "-v"|"--version")
+            version; exit 0
+            ;;
+    esac
+
+
+	for var in "$@"
+	do
+	  echo "$var" >> .gitignore
+	done
+}
+
+main "$@"

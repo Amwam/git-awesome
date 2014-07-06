@@ -1,10 +1,9 @@
 #!/usr/bin/env sh
 
 usage() {
-    echo "usage: git track <subcommand>"
+    echo "Track a remote branch"
+    echo "usage: <remote> [<remote-branch>]"
     echo
-    echo "Available subcommands are:"
-    echo "[]"
 }
 
 version() {
@@ -12,17 +11,12 @@ version() {
     echo
 }
 
-function_exists() {
-    declare -f -F $1 > /dev/null
-    return $?
-}
-
 main() {
     if [ "$#" -lt 1 ]; then
         usage; exit 1
     fi
 
-    local subcommand="$1"; shift
+    local subcommand="$1";
 
     case $subcommand in
         "-h"|"--help")
@@ -33,22 +27,38 @@ main() {
             ;;
     esac
 
-    if function_exists "cmd_$subcommand" ; then
-        cmd_$subcommand "$@"; exit 0
+    SUBDIRECTORY_OK=Yes
+    OPTIONS_SPEC=
+
+    . "`git --exec-path`/git-sh-setup"
+
+    branch=`git symbolic-ref -q HEAD | sed "s!refs/heads/!!"`
+
+    if [ "$branch" = "" ]
+    then
+      die "Make sure you're on a branch."
     fi
 
-    local workingdir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
-    if [ ! -e "$workingdir/git-remote-$subcommand" ]; then
-        usage; exit 1
+    remote=$1
+
+    if [ "$1" = "" ]
+    then
+      die "You need to specify a remote."
     fi
 
-    source "$workingdir/git-remote-$subcommand"
-
-    if ! function_exists "cmd_$subcommand"  ; then
-        usage; exit 1
+    if [ "$2" = "" ]
+    then
+      merge=$branch
+    else
+      merge=$2
     fi
 
-    cmd_$subcommand "$@"
+    git config branch.$branch.remote $remote
+    git config branch.$branch.merge refs/heads/$merge
+
+    echo "Tracking $remote/$merge"
+
+    exit 0
 }
 
 main "$@"
