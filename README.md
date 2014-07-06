@@ -1,6 +1,15 @@
 A collection of git scripts to make working with git a little easier.
 ------------------------------------------------------------------
 
+
+---
+
+**Installation/Uninstallation**
+
+These extensions can be installed using Make. Simply run `make install` or `make uninstall`
+
+---
+
 **git-ignore**
 
 Use to append to the .gitignore file
